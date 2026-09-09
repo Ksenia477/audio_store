@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Личный кабинет | WSTER{% endblock %}
+
+{% block content %}
+<section class="account-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Аккаунт</p>
+        <h1>Личный кабинет</h1>
+    </div>
+
+    <div class="account-layout">
+        <section class="account-panel">
+            <div class="section-title">
+                <h2>Профиль</h2>
+                <span>{{ user.username }}</span>
+            </div>
+            <form class="form-grid" method="post" action="{% url 'users:profile_update' %}">
+                {% csrf_token %}
+                {% for field in profile_form %}
+                    <label>
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {{ field.errors }}
+                    </label>
+                {% endfor %}
+                <button type="submit">Сохранить</button>
+            </form>
+        </section>
+
+        <section class="account-panel">
+            <div class="section-title">
+                <h2>Заказы</h2>
+                <a href="{% url 'orders:list' %}">Все заказы</a>
+            </div>
+            {% if recent_orders %}
+                <div class="order-list compact">
+                    {% for order in recent_orders %}
+                        <a class="order-row" href="{{ order.get_absolute_url }}">
+                            <span>Заказ #{{ order.id }}</span>
+                            <strong>{{ order.total_price|floatformat:0|intcomma }} ₽</strong>
+                            <small>{{ order.get_status_display }}</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-inline">
+                    <p>Заказов пока нет.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="account-layout addresses-layout">
+        <section class="account-panel">
+            <div class="section-title">
+                <h2>Адреса</h2>
+                <span>{{ addresses|length }}</span>
+            </div>
+            {% if addresses %}
+                <div class="address-list">
+                    {% for address in addresses %}
+                        <article class="address-item">
+                            <div>
+                                <h3>{{ address.title }}</h3>
+                                <p>{{ address.full_name }}, {{ address.phone }}</p>
+                                <p>{{ address.city }}, {{ address.street }}, {{ address.house }}{% if address.apartment %}, {{ address.apartment }}{% endif %}</p>
+                                {% if address.is_default %}
+                                    <span class="status-pill">По умолчанию</span>
+                                {% endif %}
+                            </div>
+                            <div class="address-actions">
+                                <a href="{% url 'users:address_update' address.id %}">Изменить</a>
+                                <a href="{% url 'users:address_delete' address.id %}">Удалить</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-inline">
+                    <p>Сохраненных адресов пока нет.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="account-panel">
+            <div class="section-title">
+                <h2>Новый адрес</h2>
+            </div>
+            <form class="form-grid" method="post" action="{% url 'users:address_create' %}">
+                {% csrf_token %}
+                {% for field in address_form %}
+                    <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox-row{% endif %}">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {{ field.errors }}
+                    </label>
+                {% endfor %}
+                <button type="submit">Добавить адрес</button>
+            </form>
+        </section>
+    </div>
+</section>
+{% endblock %}

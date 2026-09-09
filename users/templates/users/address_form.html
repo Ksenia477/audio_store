@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Адрес | WSTER{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Аккаунт</p>
+        <h1>Адрес</h1>
+    </div>
+
+    <form class="form-panel" method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox-row{% endif %}">
+                <span>{{ field.label }}</span>
+                {{ field }}
+                {{ field.errors }}
+            </label>
+        {% endfor %}
+        <button type="submit">Сохранить адрес</button>
+        <a class="secondary-link" href="{% url 'users:dashboard' %}">Назад</a>
+    </form>
+</section>
+{% endblock %}

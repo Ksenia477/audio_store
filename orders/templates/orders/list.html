@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}История заказов | WSTER{% endblock %}
+
+{% block content %}
+<section class="account-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Покупки</p>
+        <h1>История заказов</h1>
+    </div>
+
+    {% if orders %}
+        <div class="order-list">
+            {% for order in orders %}
+                <a class="order-row" href="{{ order.get_absolute_url }}">
+                    <span>Заказ #{{ order.id }}</span>
+                    <strong>{{ order.total_price|floatformat:0|intcomma }} ₽</strong>
+                    <small>{{ order.get_status_display }}</small>
+                    <small>{{ order.created_at|date:"d.m.Y H:i" }}</small>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>Заказов пока нет</h2>
+            <p>После оформления заказа он появится здесь.</p>
+            <a class="primary-link" href="{% url 'catalog:product_list' %}">Перейти в каталог</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Вход | WSTER{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Аккаунт</p>
+        <h1>Вход</h1>
+    </div>
+
+    <form class="form-panel" method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            <label>
+                <span>{{ field.label }}</span>
+                {{ field }}
+                {{ field.errors }}
+            </label>
+        {% endfor %}
+        <button type="submit">Войти</button>
+        <p class="form-note">
+            <a href="{% url 'users:password_reset' %}">Восстановить пароль</a>
+        </p>
+        <p class="form-note">
+            Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a>
+        </p>
+    </form>
+</section>
+{% endblock %}

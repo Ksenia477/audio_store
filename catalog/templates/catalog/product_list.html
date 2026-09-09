@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Каталог | WSTER{% endblock %}
+
+{% block content %}
+<section class="catalog-shell">
+    {% if show_showcase %}
+        <header class="storefront-intro">
+            <div class="intro-brand">
+                <p class="eyebrow">Караоке-микрофоны &amp; Bluetooth-колонки</p>
+                <h1>WSTER<span class="icon icon-audio-lines" aria-hidden="true"></span></h1>
+            </div>
+            <div class="intro-note">
+                <p>Твой звук.<br>Твои яркие моменты.</p>
+                <span>Музыка для дома, встреч с друзьями<br>и подарков с характером.</span>
+            </div>
+            <a class="circle-link" href="#catalog-products" aria-label="Перейти к каталогу" title="Перейти к каталогу"><span class="icon icon-arrow-down" aria-hidden="true"></span></a>
+        </header>
+
+        <section class="collection-grid" aria-label="Подборка WSTER">
+            {% for product in featured_products %}
+                <a class="collection-product collection-product-{{ forloop.counter }}" href="{{ product.get_absolute_url }}">
+                    <div class="collection-topline"><span>{{ product.category.name }}</span><span class="circle-link"><span class="icon icon-arrow-up-right" aria-hidden="true"></span></span></div>
+                    {% with image=product.main_image %}
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" fetchpriority="high">
+                    {% endwith %}
+                    <div class="collection-caption"><h2>{{ product.name }}</h2><strong>{{ product.price|floatformat:0|intcomma }} ₽</strong></div>
+                </a>
+            {% endfor %}
+            <nav class="collection-categories" aria-label="Коллекции">
+                <p class="eyebrow">Коллекции</p>
+                <h2>Настроение<br>на каждый день.</h2>
+                <div class="collection-category-list">
+                    {% for category in categories %}
+                        <a href="{{ category.get_absolute_url }}"><span class="category-index">0{{ forloop.counter }}</span><span>{{ category.name }}</span><span class="icon icon-arrow-up-right" aria-hidden="true"></span></a>
+                    {% endfor %}
+                </div>
+                <a class="collection-all" href="#catalog-products">Все товары <span class="icon icon-arrow-right" aria-hidden="true"></span></a>
+            </nav>
+        </section>
+    {% endif %}
+
+    <div class="catalog-heading" id="catalog-products">
+        <div>
+            {% if show_showcase %}<h2>Выберите свой звук<span class="heading-count">{{ paginator.count }}</span></h2>{% else %}<h1>{% if selected_category %}{{ selected_category.name }}{% elif search_query %}Результаты поиска{% else %}Каталог{% endif %}<span class="heading-count">{{ paginator.count }}</span></h1>{% endif %}
+            {% if search_query %}<p>По запросу «{{ search_query }}»</p>{% endif %}
+        </div>
+        <form class="search-form" method="get" action="{% url 'catalog:product_list' %}">
+            <input
+                type="search"
+                name="q"
+                value="{{ search_query }}"
+                placeholder="Название или модель"
+                aria-label="Поиск по каталогу"
+            >
+            <button type="submit" aria-label="Поиск" title="Поиск"><span class="icon icon-search" aria-hidden="true"></span></button>
+        </form>
+    </div>
+
+    <div class="catalog-layout">
+        <aside class="filters" aria-label="Категории">
+            <a
+                class="{% if not selected_category %}is-active{% endif %}"
+                href="{% url 'catalog:product_list' %}#catalog-products"
+            >
+                Все товары
+            </a>
+            {% for category in categories %}
+                <a
+                    class="{% if selected_category == category %}is-active{% endif %}"
+                    href="{{ category.get_absolute_url }}#catalog-products"
+                >
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </aside>
+
+        <section class="product-grid" aria-label="Товары">
+            {% for product in products %}
+                <article class="product-card">
+                    <a class="product-image" href="{{ product.get_absolute_url }}">
+                        {% with image=product.main_image %}
+                            {% if image %}
+                                <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
+                            {% else %}
+                                <span>
+                                    <small>{{ product.category.name }}</small>
+                                    {{ product.name|truncatechars:34 }}
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                    <div class="product-body">
+                        <div class="product-copy">
+                            <div class="product-meta">
+                                <span>{{ product.category.name }}</span>
+                                {% if product.is_in_stock %}
+                                    <span class="stock in-stock">В наличии</span>
+                                {% else %}
+                                    <span class="stock out-stock">Нет в наличии</span>
+                                {% endif %}
+                            </div>
+                            <h2>
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                            </h2>
+                            {% if product.short_description %}
+                                <p>{{ product.short_description }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="product-purchase">
+                            <div class="price-row">
+                                <strong>{{ product.price|floatformat:0|intcomma }} ₽</strong>
+                                {% if product.has_discount %}
+                                    <span>{{ product.old_price|floatformat:0|intcomma }} ₽</span>
+                                {% endif %}
+                            </div>
+                            {% if product.is_in_stock %}
+                                <form class="card-cart-form" method="post" action="{% url 'cart:add' product.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit">В корзину<span class="icon icon-shopping-bag" aria-hidden="true"></span></button>
+                                </form>
+                            {% else %}
+                                <button class="card-cart-form" type="button" disabled>Нет в наличии</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="empty-state">
+                    <h2>{% if search_query %}Ничего не нашлось{% else %}Здесь пока нет товаров{% endif %}</h2>
+                    <a class="secondary-link" href="{% url 'catalog:product_list' %}#catalog-products">Все товары</a>
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+
+    {% if is_paginated %}
+        <nav class="pagination" aria-label="Страницы каталога">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Назад</a>
+            {% endif %}
+            <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Вперед</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

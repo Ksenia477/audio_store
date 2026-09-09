@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Тестовая оплата | WSTER{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="page-heading">
+        <p class="eyebrow">ЮKassa mock</p>
+        <h1>Тестовая оплата</h1>
+    </div>
+
+    <div class="form-panel mock-payment-panel">
+        <div>
+            <h2>Заказ #{{ payment.order.id }}</h2>
+            <p>{{ payment.amount|floatformat:0|intcomma }} {{ payment.currency }}</p>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" name="action" value="succeeded">Оплатить успешно</button>
+            <button class="ghost-button" type="submit" name="action" value="canceled">Отменить платеж</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

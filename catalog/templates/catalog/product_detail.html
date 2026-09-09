@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ product.name }} | WSTER{% endblock %}
+
+{% block content %}
+<article class="product-detail">
+    <div class="gallery">
+        {% with main_image=product.main_image %}
+            <div class="gallery-main">
+                {% if main_image %}
+                    <img src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}">
+                {% else %}
+                    <span>
+                        <small>{{ product.category.name }}</small>
+                        {{ product.name }}
+                    </span>
+                {% endif %}
+            </div>
+        {% endwith %}
+
+        {% if product.images.all %}
+            <div class="gallery-thumbs">
+                {% for image in product.images.all %}
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <section class="product-info">
+        <a class="back-link" href="{{ product.category.get_absolute_url }}"><span class="icon icon-arrow-left" aria-hidden="true"></span>{{ product.category.name }}</a>
+        <h1>{{ product.name }}</h1>
+        {% if product.short_description %}
+            <p class="lead">{{ product.short_description }}</p>
+        {% endif %}
+
+        <form class="buy-panel" method="post" action="{% url 'cart:add' product.id %}">
+            {% csrf_token %}
+            <div>
+                <div class="detail-price">
+                    <strong>{{ product.price|floatformat:0|intcomma }} ₽</strong>
+                    {% if product.has_discount %}
+                        <span>{{ product.old_price|floatformat:0|intcomma }} ₽</span>
+                    {% endif %}
+                </div>
+                {% if product.is_in_stock %}
+                    <p class="stock in-stock">В наличии: {{ product.stock }}</p>
+                {% else %}
+                    <p class="stock out-stock">Нет в наличии</p>
+                {% endif %}
+            </div>
+            {% if product.is_in_stock %}
+                <label class="quantity-control">
+                    <span>Кол-во</span>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                </label>
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit">В корзину<span class="icon icon-shopping-bag" aria-hidden="true"></span></button>
+            {% else %}
+                <button type="button" disabled>Нет в наличии</button>
+            {% endif %}
+            {% if product.ozon_url %}
+                <a
+                    class="ozon-product-link"
+                    href="{{ product.ozon_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Смотреть на Ozon<span class="icon icon-arrow-up-right" aria-hidden="true"></span>
+                </a>
+            {% endif %}
+        </form>
+
+        {% if product.description %}
+            <div class="text-block">
+                <h2>Описание</h2>
+                <p>{{ product.description|linebreaksbr }}</p>
+            </div>
+        {% endif %}
+
+        {% if product.specifications.all %}
+            <div class="specs">
+                <h2>Характеристики</h2>
+                {% for spec in product.specifications.all %}
+                    <div>
+                        <dt>{{ spec.name }}</dt>
+                        <dd>{{ spec.value }}</dd>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+</article>
+{% endblock %}

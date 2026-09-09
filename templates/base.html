@@ -1,0 +1,58 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}WSTER{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+    <div class="site-frame">
+        <header class="site-header">
+            <a class="brand" href="{% url 'catalog:product_list' %}" aria-label="WSTER, главная">
+                <span class="brand-mark">W</span>
+                <span>
+                    <strong class="store-name">WSTER</strong>
+                    <small>Звук в твоём ритме</small>
+                </span>
+            </a>
+            <nav class="site-nav" aria-label="Основная навигация">
+                <a href="{% url 'catalog:product_list' %}" {% if request.resolver_match.namespace == 'catalog' %}aria-current="page"{% endif %}>Каталог</a>
+                <a class="cart-link" href="{% url 'cart:detail' %}" {% if request.resolver_match.namespace == 'cart' %}aria-current="page"{% endif %}>
+                    <span class="icon icon-shopping-bag" aria-hidden="true"></span>
+                    Корзина
+                    <span class="cart-count">{{ cart_summary|length }}</span>
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'users:dashboard' %}">Кабинет</a>
+                    <form class="nav-logout" method="post" action="{% url 'users:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit">Выйти</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'users:login' %}">Войти</a>
+                {% endif %}
+                {% if user.is_staff %}<a href="/admin/">Админка</a>{% endif %}
+            </nav>
+        </header>
+
+        <main class="site-main">
+            {% if messages %}
+                <div class="messages" aria-live="polite">
+                    {% for message in messages %}
+                        <p class="message {{ message.tags }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <a class="footer-brand" href="{% url 'catalog:product_list' %}">WSTER<span class="icon icon-audio-lines" aria-hidden="true"></span></a>
+            <span>Портативный звук для дома, подарков и вечеринок</span>
+        </footer>
+    </div>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

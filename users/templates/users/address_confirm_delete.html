@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Удалить адрес | WSTER{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Аккаунт</p>
+        <h1>Удалить адрес</h1>
+    </div>
+
+    <form class="form-panel" method="post">
+        {% csrf_token %}
+        <p>Удалить адрес “{{ object.title }}”?</p>
+        <button type="submit">Удалить</button>
+        <a class="secondary-link" href="{% url 'users:dashboard' %}">Назад</a>
+    </form>
+</section>
+{% endblock %}

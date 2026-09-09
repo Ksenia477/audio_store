@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Оформление заказа | WSTER{% endblock %}
+
+{% block content %}
+<section class="checkout-shell">
+    <div class="page-heading">
+        <p class="eyebrow">Покупка</p>
+        <h1>Оформление заказа</h1>
+    </div>
+
+    <div class="checkout-layout">
+        <form class="form-panel checkout-form" method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-columns">
+                {% for field in form %}
+                    <label class="{% if field.name == 'comment' %}full-width{% endif %}">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small>{{ field.help_text }}</small>
+                        {% endif %}
+                        {{ field.errors }}
+                    </label>
+                {% endfor %}
+            </div>
+            <button type="submit">Создать заказ</button>
+        </form>
+
+        <aside class="cart-summary checkout-summary" aria-label="Итого">
+            <h2>Ваш заказ</h2>
+            <div class="checkout-items">
+                {% for item in cart_items %}
+                    <div class="checkout-item">
+                        <span>{{ item.product.name }}</span>
+                        <small>{{ item.quantity }} × {{ item.unit_price|floatformat:0|intcomma }} ₽</small>
+                        <strong>{{ item.total_price|floatformat:0|intcomma }} ₽</strong>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="summary-row">
+                <span>Товаров</span>
+                <strong>{{ cart|length }}</strong>
+            </div>
+            {% if delivery_quote %}
+                <div class="summary-row">
+                    <span>Доставка</span>
+                    <strong>{{ delivery_quote.price|floatformat:0|intcomma }} ₽</strong>
+                </div>
+                {% if delivery_quote.period_min and delivery_quote.period_max %}
+                    <div class="summary-row">
+                        <span>Срок</span>
+                        <strong>{{ delivery_quote.period_min }}-{{ delivery_quote.period_max }} дн.</strong>
+                    </div>
+                {% endif %}
+            {% endif %}
+            <div class="summary-row summary-total">
+                <span>Сумма</span>
+                <strong>{{ checkout_total|floatformat:0|intcomma }} ₽</strong>
+            </div>
+            <a href="{% url 'cart:detail' %}">Изменить корзину</a>
+        </aside>
+    </div>
+</section>
+{% endblock %}
